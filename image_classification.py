@@ -11,11 +11,24 @@ while cap.isOpened():
     if not success:
         break
 
-    # Run top-1/top-5 classification
+    # Run classification inference
     results = model(frame)
-    annotated_frame = results[0].plot()
+    probs = results[0].probs
 
-    cv2.imshow("YOLOv8 - Image Classification", annotated_frame)
+    # Get Top-1 class name and confidence score
+    top1_id = probs.top1
+    top1_conf = probs.top1conf.item()
+    class_name = model.names[top1_id]
+
+    # Draw prediction banner on the screen
+    label = f"Prediction: {class_name} ({top1_conf * 100:.1f}%)"
+    cv2.rectangle(frame, (10, 10), (500, 60), (0, 0, 0), -1)  # Background box
+    cv2.putText(
+        frame, label, (20, 45),
+        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2
+    )
+
+    cv2.imshow("YOLOv8 - Image Classification", frame)
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
